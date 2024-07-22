@@ -8,7 +8,7 @@
 Using a stratified split for the data should improve the results, especially for classes with low support (macro avg should increase).
 
 ## description
-RNN with stratified split. Requires oversampling of the minority classes.
+RNN with stratified split. Requires oversampling of the minority classes. Oversampling was done for classes with less than 50 samples, oversampled in all splits.
 
 ## architecture
 ```
@@ -73,4 +73,4 @@ model = Sequential(layers=[
 
 ## conclusion
 Macro Average improved as predicted, but overall performance decreased. Some classes were never predicted, even after oversampling.  
-Either the model is not is unable to learn some classes because of model constraints, or the data does not include sufficient information.
+Oversampling technique might not be very good. Weighted Average should not have decreased that much.
