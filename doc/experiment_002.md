@@ -44,7 +44,7 @@ model = Sequential(layers=[
 | parameter                    | value                          |
 |------------------------------|--------------------------------|
 | sequence length              | 100                            |
-| data                         | naive split                    |
+| data                         | stratified split               |
 | train/val/test               | 70/15/15                       |
 | len(data) before seq         | 431895                         |
 | len(data) after seq          | 757987                         |
