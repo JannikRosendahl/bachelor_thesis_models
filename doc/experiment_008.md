@@ -1,8 +1,8 @@
 # experiment 008 - feature: user, predicate file types
 
-[commit](https://github.com/JannikRosendahl/bachelor_thesis_models/tree/5a29a63e50727da54aef4d56731559015d0b904a)  
-[notebook](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/5a29a63e50727da54aef4d56731559015d0b904a/rnn.ipynb)  
-[artifacts](https://github.com/JannikRosendahl/bachelor_thesis_models/tree/5a29a63e50727da54aef4d56731559015d0b904a/saves/rnn/100_benign)
+[commit](https://github.com/JannikRosendahl/bachelor_thesis_models/tree/c6a7f3d437546fdf196bc0b02c4b6c2ead8d0bda)  
+[notebook](https://github.com/JannikRosendahl/bachelor_thesis_models/tree/c6a7f3d437546fdf196bc0b02c4b6c2ead8d0bda/rnn.ipynb)  
+[artifacts](https://github.com/JannikRosendahl/bachelor_thesis_models/tree/c6a7f3d437546fdf196bc0b02c4b6c2ead8d0bda/saves/rnn/100_user_filetypes)
 
 ## therory
 Previous experiments showed that more features were needed to achieve better results. This experiment adds the user (one-hot 17) and the predicate objects file types (2x one-hot 7) to the model.
