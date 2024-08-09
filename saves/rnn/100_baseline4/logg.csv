@@ -1,0 +1,2 @@
+epoch,catergorical_accuracy,learning_rate,loss,top_3_categorical_accuracy,val_catergorical_accuracy,val_loss,val_top_3_categorical_accuracy,val_w_catergorical_accuracy,val_w_top_3_categorical_accuracy,w_catergorical_accuracy,w_top_3_categorical_accuracy
+0,0.8557729125022888,9.999999747378752e-05,0.4478183388710022,0.9607723355293274,0.7414350509643555,0.8893010020256042,0.9076038599014282,0.7414350509643555,0.9076038599014282,0.8308402895927429,0.9517032504081726
