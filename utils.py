@@ -129,6 +129,15 @@ class Preprocessor:
     Class used to preprocess lines into vectors of preprocessed and vectorized values.
     """
     def __init__(self, enabled_features: list) -> None:
+        """
+        Initializes the preprocessor with the enabled features.
+        List of valid features:
+            - 'TYPE': event type
+            - 'USERNAME': username
+            - 'PRED_OBJ_TYPES': predicate object types (file, netobject, pipe, etc.)
+            - 'PRED_OBJ_PATHS': predicted object paths
+            - 'PRED_OBJ_NETINFO': predicted object network information
+        """
         self.enabled_features = enabled_features
 
         self.event_types_map = {}
