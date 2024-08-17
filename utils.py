@@ -124,8 +124,13 @@ def preprocess_port(port):
 data loading utilities
 """
 
-class Vectorizer:
-    def __init__(self) -> None:
+class Preprocessor:
+    """
+    Class used to preprocess lines into vectors of preprocessed and vectorized values.
+    """
+    def __init__(self, enabled_features: list) -> None:
+        self.enabled_features = enabled_features
+
         self.event_types_map = {}
         self.users_map = {}
         self.filetypes_map = {'None': 0}
@@ -133,30 +138,47 @@ class Vectorizer:
         self.addr_map = {'None': 0}
         self.port_map = {'None': 0}
 
-    def vectorize_line(self, line: list) -> dict:
+    def process(self, line: list) -> dict:
         """
-        Converts a parsed line (list of values) into a dict of vectorized features (FEATURE_NAME -> INT).
-        Fills the vectorization maps on the fly.
-        Returns a dict of FEATURE_NAME -> INT preprocessed features.
+        Processes a line from the dataset.
+        Returns a dictionary with the processed values.
+        Values are vectorized and mapped to integers.
         """
         line = line.strip('\n ').split(',')
-        assert len(line) == 14
-        return {
-            'TYPE': self.event_types_map.setdefault(line[0], len(self.event_types_map)),
-            'USERNAME': self.users_map.setdefault(line[1], len(self.users_map)),
-            'PRED_OBJ1_TYPE': self.filetypes_map.setdefault(line[2], len(self.filetypes_map)),
-            'PRED_OBJ2_TYPE': self.filetypes_map.setdefault(line[3], len(self.filetypes_map)),
-            'PRED_OBJ1_PATH': self.path_map.setdefault(preprocess_path_to_tld(line[4]), len(self.path_map)),
-            'PRED_OBJ2_PATH': self.path_map.setdefault(preprocess_path_to_tld(line[5]), len(self.path_map)),
-            'PRED_OBJ1_LOCALIP': self.addr_map.setdefault(preprocess_ip(line[6]), len(self.addr_map)),
-            'PRED_OBJ1_LOCALPORT': self.port_map.setdefault(preprocess_port(line[7]), len(self.port_map)),
-            'PRED_OBJ1_REMOTEIP': self.addr_map.setdefault(preprocess_ip(line[8]), len(self.addr_map)),
-            'PRED_OBJ1_REMOTEPORT': self.port_map.setdefault(preprocess_port(line[9]), len(self.port_map)),
-            'PRED_OBJ2_LOCALIP': self.addr_map.setdefault(preprocess_ip(line[10]), len(self.addr_map)),
-            'PRED_OBJ2_LOCALPORT': self.port_map.setdefault(preprocess_port(line[11]), len(self.port_map)),
-            'PRED_OBJ2_REMOTEIP': self.addr_map.setdefault(preprocess_ip(line[12]), len(self.addr_map)),
-            'PRED_OBJ2_REMOTEPORT': self.port_map.setdefault(preprocess_port(line[13]), len(self.port_map))
-        }
+
+        v = {}
+
+        if 'TYPE' in self.enabled_features:
+            assert len(line) >= 1
+            v['TYPE'] = self.event_types_map.setdefault(line[0], len(self.event_types_map))
+
+        if 'USERNAME' in self.enabled_features:
+            assert len(line) >= 2
+            v['USERNAME'] = self.users_map.setdefault(line[1], len(self.users_map))
+
+        if 'PRED_OBJ_TYPES' in self.enabled_features:
+            assert len(line) >= 4
+            v['PRED_OBJ1_TYPE'] = self.filetypes_map.setdefault(line[2], len(self.filetypes_map))
+            v['PRED_OBJ2_TYPE'] = self.filetypes_map.setdefault(line[3], len(self.filetypes_map))
+
+        if 'PRED_OBJ_PATHS' in self.enabled_features:
+            assert len(line) >= 6
+            v['PRED_OBJ1_PATH'] = self.path_map.setdefault(preprocess_path_to_tld(line[4]), len(self.path_map))
+            v['PRED_OBJ2_PATH'] = self.path_map.setdefault(preprocess_path_to_tld(line[5]), len(self.path_map))
+
+        if 'PRED_OBJ_NETINFO' in self.enabled_features:
+            assert len(line) >= 14
+            v['PRED_OBJ1_LOCALIP'] = self.addr_map.setdefault(preprocess_ip(line[6]), len(self.addr_map))
+            v['PRED_OBJ1_LOCALPORT'] = self.port_map.setdefault(preprocess_port(line[7]), len(self.port_map))
+            v['PRED_OBJ1_REMOTEIP'] = self.addr_map.setdefault(preprocess_ip(line[8]), len(self.addr_map))
+            v['PRED_OBJ1_REMOTEPORT'] = self.port_map.setdefault(preprocess_port(line[9]), len(self.port_map))
+            v['PRED_OBJ2_LOCALIP'] = self.addr_map.setdefault(preprocess_ip(line[10]), len(self.addr_map))
+            v['PRED_OBJ2_LOCALPORT'] = self.port_map.setdefault(preprocess_port(line[11]), len(self.port_map))
+            v['PRED_OBJ2_REMOTEIP'] = self.addr_map.setdefault(preprocess_ip(line[12]), len(self.addr_map))
+            v['PRED_OBJ2_REMOTEPORT'] = self.port_map.setdefault(preprocess_port(line[13]), len(self.port_map))
+
+        return v
+
 
 """
 ML utilities
