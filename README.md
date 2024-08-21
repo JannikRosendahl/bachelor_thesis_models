@@ -1,5 +1,8 @@
 ### Documentation for important files referenced in thesis.
 
+Every notebook documents one experiment. Its artifacts (model, logs, plots) are stored in `./saves/$experiment_name`. The root directory contains the base versions of the experiments. Variants of the experiments are stored in subdirectories.
+
+
 | File  | Description |
 | --- | --- |
 | [baseline_rnn.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/baseline_rnn.ipynb) | Baseline model on which other models then try to improve |
