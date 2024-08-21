@@ -54,6 +54,11 @@ def preprocess_path_to_tld(path):
         path = path.split('/')[1]
     return path
 
+def preprocess_path_to_hash(path) -> int:
+    if path == 'None':
+        return 0
+    return hash(path)
+
 private_ip_ranges = [
     [ '10.0.0.0', '10.255.255.255' ],
     [ '100.64.0.0', '100.127.255.255' ],
@@ -128,15 +133,18 @@ class Preprocessor:
     """
     Class used to preprocess lines into vectors of preprocessed and vectorized values.
     """
-    def __init__(self, enabled_features: list) -> None:
+    def __init__(self, enabled_features: list, **kwargs) -> None:
         """
         Initializes the preprocessor with the enabled features.
         List of valid features:
             - 'TYPE': event type
             - 'USERNAME': username
             - 'PRED_OBJ_TYPES': predicate object types (file, netobject, pipe, etc.)
-            - 'PRED_OBJ_PATHS': predicted object paths
-            - 'PRED_OBJ_NETINFO': predicted object network information
+            - 'PRED_OBJ_PATHS': predicate object paths
+            - 'PRED_OBJ_NETINFO': predicate object network information
+            - 'PRED_OBJ_PATHHASH': predicate object path hash
+            - 'DELTA_TIME': time difference between events
+            - 'PRED_OBJ_PATH_TOP_DIRS': most used files and directories. takes optional kwarg 'top_dirs' (default 20) which controls dimensionality
         """
         self.enabled_features = enabled_features
 
@@ -146,6 +154,24 @@ class Preprocessor:
         self.path_map = {'None': 0}
         self.addr_map = {'None': 0}
         self.port_map = {'None': 0}
+
+        if 'PRED_OBJ_PATH_TOP_DIRS' in enabled_features:
+            self.top_dir_map = {'None': 0, 'Other': 1}
+            # get or set argument
+            if 'top_dirs' in kwargs:
+                self.top_dirs = kwargs['top_dirs']
+            else:
+                self.top_dirs = 20
+
+            top_dirs_list = []
+            # load list of top directories
+            with open('top_dirs.txt', 'r') as f:
+                for line in f:
+                    top_dirs_list.append(line.strip('\n '))
+            # add top directories to the map
+            for i, dir in enumerate(top_dirs_list[:self.top_dirs]):
+                self.top_dir_map[dir] = i + 2
+
 
     def process(self, line: list) -> dict:
         """
@@ -175,6 +201,11 @@ class Preprocessor:
             v['PRED_OBJ1_PATH'] = self.path_map.setdefault(preprocess_path_to_tld(line[4]), len(self.path_map))
             v['PRED_OBJ2_PATH'] = self.path_map.setdefault(preprocess_path_to_tld(line[5]), len(self.path_map))
 
+        if 'PRED_OBJ_PATHHASH' in self.enabled_features:
+            assert len(line) >= 6
+            v['PRED_OBJ1_PATHHASH'] = preprocess_path_to_hash(line[4])
+            v['PRED_OBJ2_PATHHASH'] = preprocess_path_to_hash(line[5])
+
         if 'PRED_OBJ_NETINFO' in self.enabled_features:
             assert len(line) >= 14
             v['PRED_OBJ1_LOCALIP'] = self.addr_map.setdefault(preprocess_ip(line[6]), len(self.addr_map))
@@ -185,6 +216,37 @@ class Preprocessor:
             v['PRED_OBJ2_LOCALPORT'] = self.port_map.setdefault(preprocess_port(line[11]), len(self.port_map))
             v['PRED_OBJ2_REMOTEIP'] = self.addr_map.setdefault(preprocess_ip(line[12]), len(self.addr_map))
             v['PRED_OBJ2_REMOTEPORT'] = self.port_map.setdefault(preprocess_port(line[13]), len(self.port_map))
+
+        if 'DELTA_TIME' in self.enabled_features:
+            assert len(line) >= 15
+            v['DELTA_TIME'] = int(line[14])
+
+        if 'PRED_OBJ_PATH_TOP_DIRS' in self.enabled_features:
+            assert len(line) >= 6
+            # check if paths are None
+            for path, key in zip(line[4:6], ['PRED_OBJ_PATH1_TOP_DIR', 'PRED_OBJ_PATH2_TOP_DIR']):
+                # if path is None, set feature to 0
+                if path == 'None':
+                    v[key] = 0
+                # if path is in the map in its exact form
+                elif path in self.top_dir_map:
+                    v[key] = self.top_dir_map[path]
+                # path is not in the map, try to find the closest match.
+                # meaning if we have something like /home/anon/file.txt, we want to find /home or better yet /home/anon
+                else:
+                    # find the longest match
+                    longest_match = 0
+                    matching_dir = None
+                    for dir in self.top_dir_map.keys():
+                        if path.startswith(dir) and dir.count('/') > longest_match:
+                            longest_match = dir.count('/')
+                            matching_dir = dir
+                    # if no match was found, set feature to 'Other'
+                    if longest_match == 0:
+                        v[key] = 1
+                    # if a match was found, set feature to the match
+                    else:
+                        v[key] = self.top_dir_map[matching_dir]
 
         return v
 
