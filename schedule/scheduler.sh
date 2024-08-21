@@ -2,7 +2,7 @@
 
 source ~/.virtualenvs/models/bin/activate
 
-notebooks=("feature_user_size_lstm" "feature_tlds_lstm")
+notebooks=("netinfo" "pioneer_lstm")
 
 for notebook in "${notebooks[@]}"
 do
