@@ -2,7 +2,7 @@
 
 source ~/.virtualenvs/models/bin/activate
 
-notebooks=("netinfo" "pioneer_lstm")
+notebooks=("path_autoencoder")
 
 for notebook in "${notebooks[@]}"
 do
@@ -17,7 +17,6 @@ do
         echo "Successfully executed $input_notebook"
     else
         echo "Error executing $input_notebook"
-        exit 1  # Exit the script if there is an error
     fi
 done
 
