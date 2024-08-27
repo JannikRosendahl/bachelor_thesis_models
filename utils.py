@@ -1,10 +1,17 @@
 # meant to be imported by notebooks
 # contains utility functions for data processing and visualization
 # extended as experiments advance, meant to be backwards compatible
+import os
+import json
+import re
+from functools import lru_cache
+from uu import encode
+
 import tensorflow as tf
 import numpy as np
 import sklearn.model_selection as sk_model_selection
 import sklearn.utils as sk_utils
+from keras.models import load_model
 
 # define sklearn.utils.shuffle with a fixed random_state
 def shuffle(*args, **kwargs):
@@ -145,6 +152,7 @@ class Preprocessor:
             - 'PRED_OBJ_PATHHASH': predicate object path hash
             - 'DELTA_TIME': time difference between events
             - 'PRED_OBJ_PATH_TOP_DIRS': most used files and directories. takes optional kwarg 'top_dirs' (default 20) which controls dimensionality
+            - 'PRED_OBJ_PATH_AUTOENC': autoencoder for paths, requires kwargs 'autoencoder_path' with path containing 'encoder.keras' and 'decoder.keras'
         """
         self.enabled_features = enabled_features
 
@@ -172,6 +180,16 @@ class Preprocessor:
             for i, dir in enumerate(top_dirs_list[:self.top_dirs]):
                 self.top_dir_map[dir] = i + 2
 
+        if 'PRED_OBJ_PATH_AUTOENC' in enabled_features:
+            self.autoencoder_path = kwargs['autoencoder_path']
+            self.encoder = load_model(os.path.join(self.autoencoder_path, 'encoder.keras'))
+            self.decoder = load_model(os.path.join(self.autoencoder_path, 'decoder.keras'))
+            with open(os.path.join(self.autoencoder_path, 'char_to_idx.json'), 'r') as f:
+                self.autoencoder_char_to_idx = json.load(f)
+            with open(os.path.join(self.autoencoder_path, 'idx_to_char.json'), 'r') as f:
+                self.autoencoder_idx_to_char = json.load(f)
+
+            self.autoencoder_none_path = self.encoder.predict(np.array([vectorize_datapoint('None', self.autoencoder_char_to_idx, fixed_length)]), verbose=0)[0]
 
     def process(self, line: list) -> dict:
         """
@@ -248,6 +266,23 @@ class Preprocessor:
                     else:
                         v[key] = self.top_dir_map[matching_dir]
 
+        if 'PRED_OBJ_PATH_AUTOENC' in self.enabled_features:
+            assert len(line) >= 6
+            # encode the paths
+            for path, key in zip(line[4:6], ['PRED_OBJ1_PATH_AUTOENC', 'PRED_OBJ2_PATH_AUTOENC']):
+                if path == 'None':
+                    v[key] = self.autoencoder_none_path
+                    continue
+
+                path_vectorized = vectorize_datapoint(path, self.autoencoder_char_to_idx, fixed_length)
+                #path_encoded = self.encoder.predict(np.array([path_vectorized]), verbose=0)[0]
+
+                path_vectorized_tuple = array_to_tuple(path_vectorized)  # Convert to tuple
+                path_encoded = encode_path_cached(path_vectorized_tuple, self.encoder)  # Use the cached function
+                v[key] = path_encoded
+
+            assert 'PRED_OBJ1_PATH_AUTOENC' in v
+            assert 'PRED_OBJ2_PATH_AUTOENC' in v
         return v
 
 
@@ -291,3 +326,50 @@ class Generator(tf.keras.utils.Sequence):
     def on_epoch_end(self):
         # shuffle data
         self.X, self.y = shuffle(self.X, self.y, random_state=42)
+
+
+
+"""
+autoencoder utilities
+"""
+def preprocess_path(path: str) -> str:
+    path = path.lower()
+    path = re.sub(r'[^a-z0-9/._]', '', path)
+    return path
+
+fixed_length = 50
+
+def vectorize_data(X, char_to_idx, fixed_length):
+    X_vec = np.zeros((len(X), fixed_length), dtype=np.int32)
+    for i, path in enumerate(X):
+        for j, char in enumerate(path):
+            if j >= fixed_length:
+                break
+            X_vec[i, j] = char_to_idx[char]
+    return X_vec
+
+def vectorize_datapoint(path: str, char_to_idx: dict, fixed_length: int) -> np.ndarray:
+    path = preprocess_path(path)
+    X_vec = np.zeros((fixed_length), dtype=np.int32)
+    for j, char in enumerate(path):
+        if j >= fixed_length:
+            break
+        X_vec[j] = char_to_idx[char]
+    return X_vec
+
+def vectorized_to_string(X, idx_to_char):
+    return [''.join([idx_to_char[idx] for idx in path]) for path in X]
+
+def output_to_string(output: np.ndarray, idx_to_char: dict) -> str:
+    output_argmax = np.argmax(output, axis=-1)
+    return vectorized_to_string(output_argmax, idx_to_char)
+
+
+def array_to_tuple(arr):
+    return tuple(arr)
+
+@lru_cache(maxsize=500000)
+def encode_path_cached(path_vectorized_tuple, encoder):
+    path_vectorized = np.array(path_vectorized_tuple)
+    path_encoded = encoder.predict(np.array([path_vectorized]), verbose=0)[0]
+    return path_encoded
