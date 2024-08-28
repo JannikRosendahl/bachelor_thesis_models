@@ -12,9 +12,9 @@ Every notebook documents one experiment. Its artifacts (model, logs, plots) are 
 | [feature_tlds.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/feature_tlds.ipynb) | baseline + predicate object top level directory path.<br>Variants with different architectures and diffent path-encodings in [here](https://github.com/JannikRosendahl/bachelor_thesis_models/tree/master/feature_tlds_variants). |
 | [netinfo_output.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/netinfo_output.ipynb) | baseline + network information.<br>Variants with different model size, lstm layers in [here](https://github.com/JannikRosendahl/bachelor_thesis_models/tree/master/feature_netinfo_variants) |
 | [deltatime_output.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/deltatime_output.ipynb) | baseline + time between events.<br>Variants with different architecture in [here]() |
-| wip: [path_autoencoded.ipynb]() | todo |
+| [path_autoencoder/path_autoencoder_output.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/path_autoencoder/path_autoencoder_output.ipynb)<br>[path_autoencoder/path_autoencoded_output.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/path_autoencoder/path_autoencoded_output.ipynb) | path autoencoder<br>model using the autoencoded paths |
+|  |  |
 | wip: [pioneer.ipynb]() | best model combining multiple features.<br>Variants in [here]() |
 | | |
-| [path_autoencoder.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/path_autoencoder.ipynb) | path autoencoder. saves |
 | [util.py](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/utils.py) | utility functions / shared code for experiments |
 | [compare_report.ipynb](https://github.com/JannikRosendahl/bachelor_thesis_models/blob/master/compare_report.ipynb) | utility, uses exported classification reports of experiements to calculate metric differences for experiments |
