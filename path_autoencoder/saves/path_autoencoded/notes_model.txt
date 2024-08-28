@@ -1,0 +1,3 @@
+model too big (> 100mb) to be commited to github.
+split using "split -b 90M model.keras model_part_"
+rebuild using "cat model_part_* > model.keras"
