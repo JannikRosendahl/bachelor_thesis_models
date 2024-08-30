@@ -2,7 +2,7 @@
 
 source ~/.virtualenvs/models/bin/activate
 
-notebooks=("path_autoencoder")
+notebooks=("pioneer_net")
 
 for notebook in "${notebooks[@]}"
 do
