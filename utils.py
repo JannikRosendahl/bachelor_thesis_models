@@ -157,6 +157,7 @@ class Preprocessor:
                 - requires kwarg 'autoencoder_path' or 'encode_map'
                 - 'autoencoder_path': path containing 'encoder.keras' and 'decoder.keras'
                 - 'encode_map': dictionary mapping paths to pre-computed vector representations
+            - 'SIZE': corresponds to size_long in event table
         """
         self.enabled_features = enabled_features
 
@@ -298,7 +299,13 @@ class Preprocessor:
 
             assert 'PRED_OBJ1_PATH_AUTOENC' in v
             assert 'PRED_OBJ2_PATH_AUTOENC' in v
+
+        if 'SIZE' in self.enabled_features:
+            assert len(line) >= 16
+            v['SIZE'] = float(line[15]) if line[15] != 'None' else 0
+
         return v
+
 
 
 """
