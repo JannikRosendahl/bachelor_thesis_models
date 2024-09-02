@@ -3,3 +3,6 @@
 .vscode/
 __pycache__/
 path_autoencoder/saves/path_autoencoded/model.keras
+schedule/saves/pioneer_4.3/model.keras
+schedule/saves/pioneer_4.2/model.keras
+schedule/saves/pioneer_4.1/model.keras
